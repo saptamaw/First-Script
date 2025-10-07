@@ -8,7 +8,7 @@ if not getgenv().AutoExecuteGUI then
     getgenv().AutoExecuteGUI = true
 
     -- =====================================================
-    -- ⚙️ Fungsi Teleport Aman
+    -- ⚙️ Fungsi Teleport Aman (tidak berubah)
     -- =====================================================
     local function teleportTo(position)
         local player = game.Players.LocalPlayer
@@ -40,9 +40,11 @@ if not getgenv().AutoExecuteGUI then
         return closest
     end
 
+    -- Services
     local TeleportService = game:GetService("TeleportService")
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
+    local VirtualUser = game:GetService("VirtualUser")
 
     -- =====================================================
     -- 💬 TAB DISCORD
@@ -62,6 +64,45 @@ if not getgenv().AutoExecuteGUI then
         Name = "Join Discord Untuk Updatean",
         Callback = function()
             setclipboard("https://discord.gg/yourserver")
+        end
+    })
+
+    -- =====================================================
+    -- 🛠️ TAB MISC (Anti-AFK)
+    -- =====================================================
+    local MiscTab = Window:CreateTab("Misc", nil)
+    MiscTab:CreateSection("Fitur Tambahan")
+
+    getgenv().AntiAFK = getgenv().AntiAFK or true
+
+    -- Pastikan hanya satu koneksi Anti-AFK
+    if not getgenv()._AntiAFK_Connected then
+        getgenv()._AntiAFK_Connected = true
+        if LocalPlayer then
+            LocalPlayer.Idled:Connect(function()
+                if getgenv().AntiAFK then
+                    VirtualUser:CaptureController()
+                    pcall(function()
+                        VirtualUser:ClickButton2(Vector2.new(0,0))
+                        VirtualUser:ClickButton1(Vector2.new(0,0))
+                    end)
+                end
+            end)
+        end
+    end
+
+    -- Toggle Anti-AFK
+    MiscTab:CreateToggle({
+        Name = "Anti-AFK",
+        CurrentValue = getgenv().AntiAFK,
+        Flag = "AntiAFK_Toggle",
+        Callback = function(value)
+            getgenv().AntiAFK = value
+            Rayfield:Notify({
+                Title = "Anti-AFK",
+                Content = (value and "Aktif" or "Nonaktif"),
+                Duration = 2
+            })
         end
     })
 
