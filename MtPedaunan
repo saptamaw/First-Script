@@ -167,6 +167,8 @@ TeleportTab:CreateButton({
                     })
                     task.wait(teleportDelay)
                 end
+
+                -- setelah summit, balik ke CP1 (bukan reset di awal loop)
                 if looping then
                     startIndex = 1
                     teleportTo(Checkpoints[1])
