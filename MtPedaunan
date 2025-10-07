@@ -1,0 +1,168 @@
+-- ✅ Load Rayfield UI Library
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- ✅ Buat Window GUI
+local Window = Rayfield:CreateWindow({
+    Name = "Teleport GUI - Checkpoint System",
+    LoadingTitle = "Teleport Interface",
+    LoadingSubtitle = "by Sapta",
+    Theme = "Default",
+    ToggleUIKeybind = "K",
+    ConfigurationSaving = {
+        Enabled = true,
+        FileName = "TeleportHub"
+    }
+})
+
+-- ✅ Tab Utama
+local TeleportTab = Window:CreateTab("Teleport", nil)
+TeleportTab:CreateSection("Checkpoints")
+
+-- =====================================================
+-- 🎯 KOORDINAT TELEPORT (CP1 - CP15 + Summit)
+-- =====================================================
+local Checkpoints = {
+    Vector3.new(-62, 57, -1013),      -- CP1
+    Vector3.new(-520, 29, -1448),     -- CP2
+    Vector3.new(-1098, 97, -1667),    -- CP3
+    Vector3.new(-1387, 87, -2035),    -- CP4
+    Vector3.new(-1962, 17, -2010),    -- CP5
+    Vector3.new(-2386, 183, -2401),   -- CP6
+    Vector3.new(-2686, 233, -2898),   -- CP7
+    Vector3.new(-3022, 368, -3361),   -- CP8
+    Vector3.new(-3704, 660, -4243),   -- CP9
+    Vector3.new(-3901, 820, -5057),   -- CP10
+    Vector3.new(-3725, 942, -5454),   -- CP11
+    Vector3.new(-3141, 1277, -6441),  -- CP12
+    Vector3.new(-2530, 1576, -6528),  -- CP13
+    Vector3.new(-2291, 1725, -7814),  -- CP14
+    Vector3.new(-2373, 2056, -9781),  -- CP15
+    Vector3.new(-2440, 2133, -10297), -- Summit
+}
+
+-- =====================================================
+-- ⚙️ Fungsi Teleport
+-- =====================================================
+local function teleportTo(position)
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    hrp.CFrame = CFrame.new(position + Vector3.new(0, 3, 0))
+end
+
+-- =====================================================
+-- 🧭 Tombol Teleport Manual
+-- =====================================================
+for i = 1, 15 do
+    TeleportTab:CreateButton({
+        Name = "Teleport ke CP" .. i,
+        Callback = function()
+            teleportTo(Checkpoints[i])
+            Rayfield:Notify({
+                Title = "Teleport",
+                Content = "Berhasil teleport ke CP" .. i,
+                Duration = 3
+            })
+        end,
+    })
+end
+
+TeleportTab:CreateButton({
+    Name = "Teleport ke Summit 🏔️",
+    Callback = function()
+        teleportTo(Checkpoints[16])
+        Rayfield:Notify({
+            Title = "Teleport",
+            Content = "Berhasil teleport ke Summit 🏔️",
+            Duration = 3
+        })
+    end,
+})
+
+-- =====================================================
+-- 🕒 Slider untuk Delay Teleport
+-- =====================================================
+local teleportDelay = 2 -- default 2 detik
+
+TeleportTab:CreateSlider({
+    Name = "Atur Jeda Teleport (detik)",
+    Range = {0.5, 10}, -- batas minimal dan maksimal
+    Increment = 0.5,
+    Suffix = "detik",
+    CurrentValue = teleportDelay,
+    Flag = "TeleportDelay",
+    Callback = function(Value)
+        teleportDelay = Value
+        Rayfield:Notify({
+            Title = "Delay Diperbarui",
+            Content = "Delay teleport diatur menjadi " .. Value .. " detik",
+            Duration = 3
+        })
+    end,
+})
+
+-- =====================================================
+-- 🔁 Auto Teleport (Naik ke Summit, lalu Balik ke CP1)
+-- =====================================================
+local looping = false
+TeleportTab:CreateButton({
+    Name = "Mulai Auto Teleport 🔁",
+    Callback = function()
+        if looping then
+            Rayfield:Notify({
+                Title = "Auto Teleport",
+                Content = "Auto teleport sudah aktif!",
+                Duration = 3
+            })
+            return
+        end
+
+        looping = true
+        Rayfield:Notify({
+            Title = "Auto Teleport",
+            Content = "Mulai teleport CP1 → Summit → CP1 berulang...",
+            Duration = 4
+        })
+
+        task.spawn(function()
+            while looping do
+                -- Dari CP1 sampai Summit
+                for i = 1, #Checkpoints do
+                    if not looping then break end
+                    teleportTo(Checkpoints[i])
+                    Rayfield:Notify({
+                        Title = "Auto Teleport",
+                        Content = (i == 16 and "Summit 🏔️" or "CP" .. i),
+                        Duration = 1.2
+                    })
+                    task.wait(teleportDelay)
+                end
+                -- Setelah Summit langsung balik ke CP1
+                if looping then
+                    teleportTo(Checkpoints[1])
+                    Rayfield:Notify({
+                        Title = "Auto Teleport",
+                        Content = "Kembali ke CP1, memulai ulang...",
+                        Duration = 2
+                    })
+                    task.wait(teleportDelay)
+                end
+            end
+        end)
+    end,
+})
+
+-- =====================================================
+-- ⛔ Stop Auto Teleport
+-- =====================================================
+TeleportTab:CreateButton({
+    Name = "Hentikan Auto Teleport ⛔",
+    Callback = function()
+        looping = false
+        Rayfield:Notify({
+            Title = "Auto Teleport",
+            Content = "Auto teleport dihentikan.",
+            Duration = 3
+        })
+    end,
+})
