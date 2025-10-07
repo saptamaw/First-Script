@@ -62,6 +62,25 @@ local function teleportTo(position)
 end
 
 -- =====================================================
+-- 📍 Fungsi Mendeteksi CP Terdekat (untuk auto start)
+-- =====================================================
+local function getNearestCheckpoint()
+    local player = game.Players.LocalPlayer
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+
+    local closest, closestDist = 1, math.huge
+    for i, pos in ipairs(Checkpoints) do
+        local dist = (hrp.Position - pos).Magnitude
+        if dist < closestDist then
+            closest = i
+            closestDist = dist
+        end
+    end
+    return closest
+end
+
+-- =====================================================
 -- 🧭 Tombol Teleport Manual
 -- =====================================================
 for i = 1, 15 do
@@ -113,7 +132,7 @@ TeleportTab:CreateSlider({
 })
 
 -- =====================================================
--- 🔁 Auto Teleport (Naik ke Summit, lalu Balik ke CP1)
+-- 🔁 Auto Teleport (Mulai dari CP saat ini)
 -- =====================================================
 local looping = false
 TeleportTab:CreateButton({
@@ -129,15 +148,16 @@ TeleportTab:CreateButton({
         end
 
         looping = true
+        local startIndex = getNearestCheckpoint() -- deteksi CP terdekat
         Rayfield:Notify({
             Title = "Auto Teleport",
-            Content = "Mulai teleport CP1 → Summit → CP1 berulang...",
+            Content = "Mulai dari CP" .. startIndex .. " → Summit → CP1 berulang...",
             Duration = 4
         })
 
         task.spawn(function()
             while looping do
-                for i = 1, #Checkpoints do
+                for i = startIndex, #Checkpoints do
                     if not looping then break end
                     teleportTo(Checkpoints[i])
                     Rayfield:Notify({
@@ -148,6 +168,7 @@ TeleportTab:CreateButton({
                     task.wait(teleportDelay)
                 end
                 if looping then
+                    startIndex = 1
                     teleportTo(Checkpoints[1])
                     Rayfield:Notify({
                         Title = "Auto Teleport",
