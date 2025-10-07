@@ -38,6 +38,15 @@ local TeleportService = game:GetService("TeleportService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
+-- Helper untuk notif
+local function notify(title, content, duration)
+    Rayfield:Notify({
+        Title = title,
+        Content = content,
+        Duration = duration or 2
+    })
+end
+
 -- =====================================================
 -- 💬 TAB DISCORD
 -- =====================================================
@@ -56,6 +65,7 @@ DiscordTab:CreateButton({
     Name = "Join Discord Untuk Updatean",
     Callback = function()
         setclipboard("https://discord.gg/yourserver")
+        notify("Discord", "Link Discord disalin ke clipboard!",2)
     end
 })
 
@@ -161,7 +171,10 @@ for _, mount in ipairs(Mounts) do
         local label = (i == #mount.CP) and "Puncak 🏔️" or ("CP"..i)
         MountTab:CreateButton({
             Name="Teleport ke "..label,
-            Callback=function() teleportTo(pos) end
+            Callback=function() 
+                teleportTo(pos)
+                notify("Teleport", "Berhasil teleport ke "..label, 2)
+            end
         })
     end
 
@@ -171,6 +184,7 @@ for _, mount in ipairs(Mounts) do
         Callback=function()
             local idx = getNearestCheckpoint(mount.CP)
             teleportTo(mount.CP[idx])
+            notify("Teleport", "Berhasil teleport ke CP"..idx.." (terdekat)", 2)
         end
     })
 
@@ -178,16 +192,22 @@ for _, mount in ipairs(Mounts) do
     MountTab:CreateButton({
         Name="Mulai Auto Teleport 🔁 ("..mount.Name..")",
         Callback=function()
-            if loopingMount then return end
+            if loopingMount then 
+                notify("Auto Teleport", "Sudah aktif!", 2)
+                return 
+            end
             loopingMount = true
             local startIndex = getNearestCheckpoint(mount.CP)
+            notify("Auto Teleport", "Memulai Auto Teleport "..mount.Name.." dari CP"..startIndex, 3)
             task.spawn(function()
                 while loopingMount do
                     for i=startIndex,#mount.CP do
                         if not loopingMount then break end
                         local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
                         if humanoid and humanoid.Health <= 0 then
+                            notify("Auto Teleport", "Player mati, menunggu hidup kembali...", 2)
                             repeat task.wait(0.5) humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") until humanoid and humanoid.Health > 0
+                            notify("Auto Teleport", "Player hidup kembali, melanjutkan Auto Teleport", 2)
                         end
                         teleportTo(mount.CP[i])
                         task.wait(teleportDelay)
@@ -205,13 +225,17 @@ for _, mount in ipairs(Mounts) do
     -- Hentikan Auto Teleport
     MountTab:CreateButton({
         Name="Hentikan Auto Teleport ⛔ ("..mount.Name..")",
-        Callback=function() loopingMount=false end
+        Callback=function() 
+            loopingMount=false
+            notify("Auto Teleport", mount.Name.." dihentikan.", 2)
+        end
     })
 
     -- Tombol Rejoin Server
     MountTab:CreateButton({
         Name="Rejoin Server 🔄",
         Callback=function()
+            notify("Rejoin", "Sedang rejoin server...",2)
             getgenv().AutoExecuteGUI=true
             TeleportService:Teleport(game.PlaceId,LocalPlayer)
         end
@@ -225,6 +249,7 @@ for _, mount in ipairs(Mounts) do
                 if mount.CP[mount.DirectToSummit[1]] and mount.CP[mount.DirectToSummit[2]] then
                     teleportTo(mount.CP[mount.DirectToSummit[1]])
                     teleportTo(mount.CP[mount.DirectToSummit[2]])
+                    notify("Teleport", "CP26 → Puncak berhasil!",2)
                 end
             end
         })
@@ -245,7 +270,7 @@ MiscTab:CreateToggle({
     Callback = function(state)
         antiAfkEnabled = state
         if antiAfkEnabled then
-            -- Anti AFK
+            notify("Anti AFK", "Anti AFK aktif", 2)
             local vu = game:GetService("VirtualUser")
             game:GetService("Players").LocalPlayer.Idled:Connect(function()
                 if antiAfkEnabled then
@@ -254,6 +279,8 @@ MiscTab:CreateToggle({
                     vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
                 end
             end)
+        else
+            notify("Anti AFK", "Anti AFK nonaktif", 2)
         end
     end
 })
