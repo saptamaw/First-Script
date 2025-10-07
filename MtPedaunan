@@ -41,13 +41,24 @@ local Checkpoints = {
 }
 
 -- =====================================================
--- ⚙️ Fungsi Teleport
+-- ⚙️ Fungsi Teleport (dengan auto-retry)
 -- =====================================================
 local function teleportTo(position)
     local player = game.Players.LocalPlayer
     local char = player.Character or player.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
+
+    -- posisi awal
+    local oldPos = hrp.Position
     hrp.CFrame = CFrame.new(position + Vector3.new(0, 3, 0))
+    task.wait(1)
+
+    -- cek kalau belum berpindah cukup jauh, ulang teleport 1x
+    local newPos = hrp.Position
+    if (oldPos - newPos).Magnitude < 10 then
+        hrp.CFrame = CFrame.new(position + Vector3.new(0, 3, 0))
+        print("[Teleport] Gagal pertama, mencoba ulang...")
+    end
 end
 
 -- =====================================================
@@ -86,7 +97,7 @@ local teleportDelay = 2 -- default 2 detik
 
 TeleportTab:CreateSlider({
     Name = "Atur Jeda Teleport (detik)",
-    Range = {0.5, 10}, -- batas minimal dan maksimal
+    Range = {0.5, 10},
     Increment = 0.5,
     Suffix = "detik",
     CurrentValue = teleportDelay,
@@ -126,7 +137,6 @@ TeleportTab:CreateButton({
 
         task.spawn(function()
             while looping do
-                -- Dari CP1 sampai Summit
                 for i = 1, #Checkpoints do
                     if not looping then break end
                     teleportTo(Checkpoints[i])
@@ -137,7 +147,6 @@ TeleportTab:CreateButton({
                     })
                     task.wait(teleportDelay)
                 end
-                -- Setelah Summit langsung balik ke CP1
                 if looping then
                     teleportTo(Checkpoints[1])
                     Rayfield:Notify({
