@@ -1,281 +1,259 @@
 -- ✅ Load Rayfield UI Library
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- ✅ Auto Execute GUI Flag
-getgenv().AutoExecuteGUI = getgenv().AutoExecuteGUI or false
-
-if not getgenv().AutoExecuteGUI then
-    getgenv().AutoExecuteGUI = true
-
-    -- =====================================================
-    -- ⚙️ Fungsi Teleport Aman (tidak berubah)
-    -- =====================================================
-    local function teleportTo(position)
-        local player = game.Players.LocalPlayer
-        local char = player.Character
-        if not char or not char:FindFirstChild("HumanoidRootPart") then return end
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        local oldPos = hrp.Position
+-- =====================================================
+-- ⚙️ Fungsi Teleport Aman
+-- =====================================================
+local function teleportTo(position)
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = char.HumanoidRootPart
+    local oldPos = hrp.Position
+    hrp.CFrame = CFrame.new(position + Vector3.new(0,3,0))
+    task.wait(0.5)
+    local newPos = hrp.Position
+    if (oldPos - newPos).Magnitude < 10 then
         hrp.CFrame = CFrame.new(position + Vector3.new(0,3,0))
-        task.wait(0.5)
-        local newPos = hrp.Position
-        if (oldPos - newPos).Magnitude < 10 then
-            hrp.CFrame = CFrame.new(position + Vector3.new(0,3,0))
+    end
+end
+
+local function getNearestCheckpoint(CPList)
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return 1 end
+    local hrp = char.HumanoidRootPart
+    local closest, minDist = 1, math.huge
+    for i,pos in ipairs(CPList) do
+        local dist = (hrp.Position - pos).Magnitude
+        if dist < minDist then
+            minDist = dist
+            closest = i
         end
     end
+    return closest
+end
 
-    local function getNearestCheckpoint(CPList)
-        local player = game.Players.LocalPlayer
-        local char = player.Character
-        if not char or not char:FindFirstChild("HumanoidRootPart") then return 1 end
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        local closest, minDist = 1, math.huge
-        for i,pos in ipairs(CPList) do
-            local dist = (hrp.Position - pos).Magnitude
-            if dist < minDist then
-                minDist = dist
-                closest = i
+local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- =====================================================
+-- 💬 TAB DISCORD
+-- =====================================================
+local Window = Rayfield:CreateWindow({
+    Name = "Solusi Untuk Dontol",
+    LoadingTitle = "Teleport Mount",
+    LoadingSubtitle = "by Barakk",
+    Theme = "Blue",
+    ToggleUIKeybind = "K",
+    ConfigurationSaving = { Enabled = true, FileName = "TeleportHub_Lite" }
+})
+
+local DiscordTab = Window:CreateTab("Discord", nil)
+DiscordTab:CreateSection("Informasi Discord / Social")
+DiscordTab:CreateButton({
+    Name = "Join Discord Untuk Updatean",
+    Callback = function()
+        setclipboard("https://discord.gg/yourserver")
+    end
+})
+
+-- =====================================================
+-- 🏔️ Semua Mount
+-- =====================================================
+local Mounts = {
+    -- Mount Perdaunan
+    {
+        Name = "Mount Perdaunan",
+        CP = {
+            Vector3.new(-62,57,-1013),Vector3.new(-520,29,-1448),Vector3.new(-1098,97,-1667),
+            Vector3.new(-1387,87,-2035),Vector3.new(-1962,17,-2010),Vector3.new(-2386,183,-2401),
+            Vector3.new(-2686,233,-2898),Vector3.new(-3022,368,-3361),Vector3.new(-3704,660,-4243),
+            Vector3.new(-3901,820,-5057),Vector3.new(-3725,942,-5454),Vector3.new(-3141,1277,-6441),
+            Vector3.new(-2530,1576,-6528),Vector3.new(-2291,1725,-7814),Vector3.new(-2373,2056,-9781),
+            Vector3.new(-2440,2133,-10297)
+        }
+    },
+    -- Mount Rimberio V2
+    {
+        Name = "Mount Rimberio V2",
+        CP = {
+            Vector3.new(337,153,500),Vector3.new(-1220,52,-231),Vector3.new(-1391,157,-145),
+            Vector3.new(-2083,357,641),Vector3.new(-1888,529,1131),Vector3.new(-2772,532,1230),
+            Vector3.new(-3209,533,1219),Vector3.new(-4158,861,1102)
+        }
+    },
+    -- Mount Ketenangan
+    {
+        Name = "Mount Ketenangan",
+        CP = {
+            Vector3.new(-900,362,-428),Vector3.new(-606,419,-544),Vector3.new(-286,487,-450),
+            Vector3.new(-60,491,-336),Vector3.new(313,472,-491),Vector3.new(348,473,-689),
+            Vector3.new(474,636,-782),Vector3.new(540,823,-385),Vector3.new(572,817,-277),
+            Vector3.new(571,817,15),Vector3.new(598,848,609),Vector3.new(777,1058,557),
+            Vector3.new(882,1048,296),Vector3.new(893,1098,88),Vector3.new(904,1061,-427),
+            Vector3.new(829,1130,-794),Vector3.new(925,1162,-905),Vector3.new(1145,1418,-670),
+            Vector3.new(1296,1482,-405),Vector3.new(1279,1584,462),Vector3.new(1588,1734,-68),
+            Vector3.new(1858,1857,-318),Vector3.new(1730,1866,-384),Vector3.new(1507,1862,-592),
+            Vector3.new(1821,1866,-644),Vector3.new(1912,1946,-526),Vector3.new(2125,1923,-740),
+            Vector3.new(2282,1946,-814),Vector3.new(2365,2157,-722),Vector3.new(2516,2217,-621),
+            Vector3.new(2501,2222,9)
+        }
+    },
+    -- Mount Atin
+    {
+        Name = "Mount Atin",
+        CP = {
+            Vector3.new(-184,129,408),Vector3.new(-166,230,652),Vector3.new(-38,408,616),
+            Vector3.new(130,651,614),Vector3.new(-247,667,735),Vector3.new(-685,642,868),
+            Vector3.new(-658,690,1458),Vector3.new(-508,904,1868),Vector3.new(61,951,2088),
+            Vector3.new(52,983,2451),Vector3.new(73,1098,2458),Vector3.new(263,1271,2038),
+            Vector3.new(-419,1303,2395),Vector3.new(-773,1315,2664),Vector3.new(-839,1475,2625),
+            Vector3.new(-469,1467,2769),Vector3.new(-468,1538,2837),Vector3.new(-385,1641,2794),
+            Vector3.new(-209,1667,2749),Vector3.new(-233,1743,2792),Vector3.new(-425,1741,2799),
+            Vector3.new(-424,1713,3420),Vector3.new(70,1720,3426),Vector3.new(436,1722,3430),
+            Vector3.new(626,1800,3432),Vector3.new(781,2165,3922)
+        },
+        DirectToSummit = {26,27}
+    },
+    -- Mount Daun
+    {
+        Name = "Mount Daun",
+        CP = {
+            Vector3.new(-625.00,251.27,-384.00),Vector3.new(-1202.00,262.62,-487.00),
+            Vector3.new(-1398.01,579.26,-949.55),Vector3.new(-1701.23,817.52,-1401.02),
+            Vector3.new(-3215.47,1720.29,-2599.54)
+        }
+    },
+    -- Mount Pamaliau
+    {
+        Name = "Mount Pamaliau",
+        CP = {
+            Vector3.new(-432,72,23),Vector3.new(-488,145,-647),Vector3.new(-730,154,-603),
+            Vector3.new(-793,277,-565),Vector3.new(-816,371,504),Vector3.new(-770,457,688),
+            Vector3.new(-336,550,603),Vector3.new(-239,585,1299),Vector3.new(-519,572,1489),
+            Vector3.new(-805,573,1092),Vector3.new(-322,638,756),Vector3.new(-533,839,590),
+            Vector3.new(-4,1077,89)
+        }
+    }
+}
+
+-- =====================================================
+-- 🏔️ Buat Tab dan Tombol per Mount
+-- =====================================================
+for _, mount in ipairs(Mounts) do
+    local MountTab = Window:CreateTab(mount.Name, nil)
+    MountTab:CreateSection("Checkpoint " .. mount.Name)
+
+    local loopingMount = false
+    local teleportDelay = 2
+
+    -- Slider Delay
+    MountTab:CreateSlider({
+        Name = "Delay Auto Teleport (detik)",
+        Range = {0.1,5}, Increment=0.1, Suffix="s", CurrentValue=teleportDelay,
+        Callback=function(value) teleportDelay = value end
+    })
+
+    -- Tombol Manual CP
+    for i,pos in ipairs(mount.CP) do
+        local label = (i == #mount.CP) and "Puncak 🏔️" or ("CP"..i)
+        MountTab:CreateButton({
+            Name="Teleport ke "..label,
+            Callback=function() teleportTo(pos) end
+        })
+    end
+
+    -- Tombol Checkpoint Terdekat
+    MountTab:CreateButton({
+        Name="Teleport ke Checkpoint Terdekat",
+        Callback=function()
+            local idx = getNearestCheckpoint(mount.CP)
+            teleportTo(mount.CP[idx])
+        end
+    })
+
+    -- Auto Teleport
+    MountTab:CreateButton({
+        Name="Mulai Auto Teleport 🔁 ("..mount.Name..")",
+        Callback=function()
+            if loopingMount then return end
+            loopingMount = true
+            local startIndex = getNearestCheckpoint(mount.CP)
+            task.spawn(function()
+                while loopingMount do
+                    for i=startIndex,#mount.CP do
+                        if not loopingMount then break end
+                        local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+                        if humanoid and humanoid.Health <= 0 then
+                            repeat task.wait(0.5) humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") until humanoid and humanoid.Health > 0
+                        end
+                        teleportTo(mount.CP[i])
+                        task.wait(teleportDelay)
+                    end
+                    if loopingMount then
+                        startIndex = 1
+                        teleportTo(mount.CP[1])
+                        task.wait(teleportDelay)
+                    end
+                end
+            end)
+        end
+    })
+
+    -- Hentikan Auto Teleport
+    MountTab:CreateButton({
+        Name="Hentikan Auto Teleport ⛔ ("..mount.Name..")",
+        Callback=function() loopingMount=false end
+    })
+
+    -- Tombol Rejoin Server
+    MountTab:CreateButton({
+        Name="Rejoin Server 🔄",
+        Callback=function()
+            getgenv().AutoExecuteGUI=true
+            TeleportService:Teleport(game.PlaceId,LocalPlayer)
+        end
+    })
+
+    -- Mount Atin Direct CP26 → Puncak
+    if mount.DirectToSummit then
+        MountTab:CreateButton({
+            Name="Teleport CP26 → Puncak",
+            Callback=function()
+                if mount.CP[mount.DirectToSummit[1]] and mount.CP[mount.DirectToSummit[2]] then
+                    teleportTo(mount.CP[mount.DirectToSummit[1]])
+                    teleportTo(mount.CP[mount.DirectToSummit[2]])
+                end
             end
-        end
-        return closest
+        })
     end
+end
 
-    -- Services
-    local TeleportService = game:GetService("TeleportService")
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local VirtualUser = game:GetService("VirtualUser")
+-- =====================================================
+-- ⚙️ Tab Misc (Anti AFK)
+-- =====================================================
+local MiscTab = Window:CreateTab("Misc", nil)
+MiscTab:CreateSection("Fitur Tambahan")
 
-    -- =====================================================
-    -- 💬 TAB DISCORD
-    -- =====================================================
-    local Window = Rayfield:CreateWindow({
-        Name = "Solusi Untuk Dontol",
-        LoadingTitle = "Teleport Mount",
-        LoadingSubtitle = "by Barakk",
-        Theme = "Blue",
-        ToggleUIKeybind = "K",
-        ConfigurationSaving = { Enabled = true, FileName = "TeleportHub_Lite" }
-    })
-
-    local DiscordTab = Window:CreateTab("Discord", nil)
-    DiscordTab:CreateSection("Informasi Discord / Social")
-    DiscordTab:CreateButton({
-        Name = "Join Discord Untuk Updatean",
-        Callback = function()
-            setclipboard("https://discord.gg/yourserver")
-        end
-    })
-
-    -- =====================================================
-    -- 🛠️ TAB MISC (Anti-AFK)
-    -- =====================================================
-    local MiscTab = Window:CreateTab("Misc", nil)
-    MiscTab:CreateSection("Fitur Tambahan")
-
-    getgenv().AntiAFK = getgenv().AntiAFK or true
-
-    -- Pastikan hanya satu koneksi Anti-AFK
-    if not getgenv()._AntiAFK_Connected then
-        getgenv()._AntiAFK_Connected = true
-        if LocalPlayer then
-            LocalPlayer.Idled:Connect(function()
-                if getgenv().AntiAFK then
-                    VirtualUser:CaptureController()
-                    pcall(function()
-                        VirtualUser:ClickButton2(Vector2.new(0,0))
-                        VirtualUser:ClickButton1(Vector2.new(0,0))
-                    end)
+local antiAfkEnabled = false
+MiscTab:CreateToggle({
+    Name = "Toggle Anti AFK",
+    CurrentValue = false,
+    Flag = "AntiAfkToggle",
+    Callback = function(state)
+        antiAfkEnabled = state
+        if antiAfkEnabled then
+            -- Anti AFK
+            local vu = game:GetService("VirtualUser")
+            game:GetService("Players").LocalPlayer.Idled:Connect(function()
+                if antiAfkEnabled then
+                    vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+                    task.wait(1)
+                    vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
                 end
             end)
         end
     end
-
-    -- Toggle Anti-AFK
-    MiscTab:CreateToggle({
-        Name = "Anti-AFK",
-        CurrentValue = getgenv().AntiAFK,
-        Flag = "AntiAFK_Toggle",
-        Callback = function(value)
-            getgenv().AntiAFK = value
-            Rayfield:Notify({
-                Title = "Anti-AFK",
-                Content = (value and "Aktif" or "Nonaktif"),
-                Duration = 2
-            })
-        end
-    })
-
-    -- =====================================================
-    -- 🏔️ Semua Mount
-    -- =====================================================
-    local Mounts = {
-        -- Sama seperti versi full, CP lengkap untuk semua mount
-        -- Mount Perdaunan
-        {
-            Name = "Mount Perdaunan",
-            CP = {
-                Vector3.new(-62,57,-1013),Vector3.new(-520,29,-1448),Vector3.new(-1098,97,-1667),
-                Vector3.new(-1387,87,-2035),Vector3.new(-1962,17,-2010),Vector3.new(-2386,183,-2401),
-                Vector3.new(-2686,233,-2898),Vector3.new(-3022,368,-3361),Vector3.new(-3704,660,-4243),
-                Vector3.new(-3901,820,-5057),Vector3.new(-3725,942,-5454),Vector3.new(-3141,1277,-6441),
-                Vector3.new(-2530,1576,-6528),Vector3.new(-2291,1725,-7814),Vector3.new(-2373,2056,-9781),
-                Vector3.new(-2440,2133,-10297)
-            }
-        },
-        -- Mount Rimberio V2
-        {
-            Name = "Mount Rimberio V2",
-            CP = {
-                Vector3.new(337,153,500),Vector3.new(-1220,52,-231),Vector3.new(-1391,157,-145),
-                Vector3.new(-2083,357,641),Vector3.new(-1888,529,1131),Vector3.new(-2772,532,1230),
-                Vector3.new(-3209,533,1219),Vector3.new(-4158,861,1102)
-            }
-        },
-        -- Mount Ketenangan
-        {
-            Name = "Mount Ketenangan",
-            CP = {
-                Vector3.new(-900,362,-428),Vector3.new(-606,419,-544),Vector3.new(-286,487,-450),
-                Vector3.new(-60,491,-336),Vector3.new(313,472,-491),Vector3.new(348,473,-689),
-                Vector3.new(474,636,-782),Vector3.new(540,823,-385),Vector3.new(572,817,-277),
-                Vector3.new(571,817,15),Vector3.new(598,848,609),Vector3.new(777,1058,557),
-                Vector3.new(882,1048,296),Vector3.new(893,1098,88),Vector3.new(904,1061,-427),
-                Vector3.new(829,1130,-794),Vector3.new(925,1162,-905),Vector3.new(1145,1418,-670),
-                Vector3.new(1296,1482,-405),Vector3.new(1279,1584,462),Vector3.new(1588,1734,-68),
-                Vector3.new(1858,1857,-318),Vector3.new(1730,1866,-384),Vector3.new(1507,1862,-592),
-                Vector3.new(1821,1866,-644),Vector3.new(1912,1946,-526),Vector3.new(2125,1923,-740),
-                Vector3.new(2282,1946,-814),Vector3.new(2365,2157,-722),Vector3.new(2516,2217,-621),
-                Vector3.new(2501,2222,9)
-            }
-        },
-        -- Mount Atin
-        {
-            Name = "Mount Atin",
-            CP = {
-                Vector3.new(-184,129,408),Vector3.new(-166,230,652),Vector3.new(-38,408,616),
-                Vector3.new(130,651,614),Vector3.new(-247,667,735),Vector3.new(-685,642,868),
-                Vector3.new(-658,690,1458),Vector3.new(-508,904,1868),Vector3.new(61,951,2088),
-                Vector3.new(52,983,2451),Vector3.new(73,1098,2458),Vector3.new(263,1271,2038),
-                Vector3.new(-419,1303,2395),Vector3.new(-773,1315,2664),Vector3.new(-839,1475,2625),
-                Vector3.new(-469,1467,2769),Vector3.new(-468,1538,2837),Vector3.new(-385,1641,2794),
-                Vector3.new(-209,1667,2749),Vector3.new(-233,1743,2792),Vector3.new(-425,1741,2799),
-                Vector3.new(-424,1713,3420),Vector3.new(70,1720,3426),Vector3.new(436,1722,3430),
-                Vector3.new(626,1800,3432),Vector3.new(781,2165,3922)
-            },
-            DirectToSummit = {26,27}
-        },
-        -- Mount Daun
-        {
-            Name = "Mount Daun",
-            CP = {
-                Vector3.new(-625.00,251.27,-384.00),Vector3.new(-1202.00,262.62,-487.00),
-                Vector3.new(-1398.01,579.26,-949.55),Vector3.new(-1701.23,817.52,-1401.02),
-                Vector3.new(-3215.47,1720.29,-2599.54)
-            }
-        },
-        -- Mount Pamaliau
-        {
-            Name = "Mount Pamaliau",
-            CP = {
-                Vector3.new(-432,72,23),Vector3.new(-488,145,-647),Vector3.new(-730,154,-603),
-                Vector3.new(-793,277,-565),Vector3.new(-816,371,504),Vector3.new(-770,457,688),
-                Vector3.new(-336,550,603),Vector3.new(-239,585,1299),Vector3.new(-519,572,1489),
-                Vector3.new(-805,573,1092),Vector3.new(-322,638,756),Vector3.new(-533,839,590),
-                Vector3.new(-4,1077,89)
-            }
-        }
-    }
-
-    -- =====================================================
-    -- 🏔️ Buat Tab dan Tombol per Mount (Lite)
-    -- =====================================================
-    for _, mount in ipairs(Mounts) do
-        local MountTab = Window:CreateTab(mount.Name, nil)
-        MountTab:CreateSection("Checkpoint " .. mount.Name)
-
-        local loopingMount = false
-        local teleportDelay = 2
-
-        -- Slider Delay
-        MountTab:CreateSlider({
-            Name = "Delay Auto Teleport (detik)",
-            Range = {0.1,5}, Increment=0.1, Suffix="s", CurrentValue=teleportDelay,
-            Callback=function(value) teleportDelay = value end
-        })
-
-        -- Tombol Manual CP
-        for i,pos in ipairs(mount.CP) do
-            local label = (i == #mount.CP) and "Puncak 🏔️" or ("CP"..i)
-            MountTab:CreateButton({
-                Name="Teleport ke "..label,
-                Callback=function() teleportTo(pos) end
-            })
-        end
-
-        -- Tombol Checkpoint Terdekat
-        MountTab:CreateButton({
-            Name="Teleport ke Checkpoint Terdekat",
-            Callback=function()
-                local idx = getNearestCheckpoint(mount.CP)
-                teleportTo(mount.CP[idx])
-            end
-        })
-
-        -- Auto Teleport (Lite, notif dikurangi)
-        MountTab:CreateButton({
-            Name="Mulai Auto Teleport 🔁 ("..mount.Name..")",
-            Callback=function()
-                if loopingMount then return end
-                loopingMount = true
-                local startIndex = getNearestCheckpoint(mount.CP)
-                task.spawn(function()
-                    while loopingMount do
-                        for i=startIndex,#mount.CP do
-                            if not loopingMount then break end
-                            local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
-                            if humanoid and humanoid.Health <= 0 then
-                                repeat task.wait(0.5) humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") until humanoid and humanoid.Health > 0
-                            end
-                            teleportTo(mount.CP[i])
-                            task.wait(teleportDelay)
-                        end
-                        if loopingMount then
-                            startIndex = 1
-                            teleportTo(mount.CP[1])
-                            task.wait(teleportDelay)
-                        end
-                    end
-                end)
-            end
-        })
-
-        -- Hentikan Auto Teleport
-        MountTab:CreateButton({
-            Name="Hentikan Auto Teleport ⛔ ("..mount.Name..")",
-            Callback=function() loopingMount=false end
-        })
-
-        -- Tombol Rejoin Server
-        MountTab:CreateButton({
-            Name="Rejoin Server 🔄",
-            Callback=function()
-                getgenv().AutoExecuteGUI=true
-                TeleportService:Teleport(game.PlaceId,LocalPlayer)
-            end
-        })
-
-        -- Mount Atin Direct CP26 → Puncak
-        if mount.DirectToSummit then
-            MountTab:CreateButton({
-                Name="Teleport CP26 → Puncak",
-                Callback=function()
-                    if mount.CP[mount.DirectToSummit[1]] and mount.CP[mount.DirectToSummit[2]] then
-                        teleportTo(mount.CP[mount.DirectToSummit[1]])
-                        teleportTo(mount.CP[mount.DirectToSummit[2]])
-                    end
-                end
-            })
-        end
-    end
-end
+})
